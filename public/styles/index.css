@@ -1,0 +1,17 @@
+body {
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   font-family: 'Roboto', sans-serif;
+   background-color: var(--mainFond);
+   font-size: clamp(0.9em, 2vw, 1.1em);
+}
+#calculator {
+   width: 23em;
+   height: 28.5em;
+   font-weight: bold;
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+   flex-direction: column;
+}

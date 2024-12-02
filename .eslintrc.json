@@ -1,0 +1,24 @@
+{
+   "root": true,
+   "env": {
+      "node": true,
+      "browser": true
+   },
+   "parserOptions": {
+      "requireConfigFile": true
+   },
+   "parser": "@babel/eslint-parser",
+   "extends": ["eslint:recommended", "plugin:prettier/recommended"],
+   "plugins": ["html"],
+   "rules": {
+      "no-console": "error",
+      "eol-last": "off",
+      "quotes": ["error", "single"],
+      "prettier/prettier": [
+         "error",
+         {
+            "endOfLine": "auto"
+         }
+      ]
+   }
+}
