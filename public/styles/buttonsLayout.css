@@ -1,0 +1,46 @@
+#input_buttons {
+   display: grid;
+   flex-grow: 1;
+   grid-template-columns: repeat(8, 1fr);
+   grid-template-rows: repeat(5, 1fr);
+   gap: 0.6em;
+   width: 85%;
+   padding-top: 1.7em;
+}
+
+#input_buttons > button {
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   cursor: pointer;
+   font-size: 1.2em;
+   color: var(--buttonsColor);
+   background-color: var(--buttonsFond);
+}
+
+#input_buttons > button:focus-visible {
+   transform: scale(1.1);
+   outline: none;
+   transition: transform 0.2s ease;
+}
+
+#x_y {
+   grid-column: 3 / span 2;
+   grid-row: 2;
+}
+#sqrt_y {
+   grid-column: 3 / span 2;
+   grid-row: 3;
+}
+#_10_x {
+   grid-column: 1 / span 2;
+   grid-row: 4;
+}
+#_1_x {
+   grid-column: 3 / span 2;
+   grid-row: 4;
+}
+#factorial {
+   grid-column: 1 / span 4;
+   grid-row: 5;
+}

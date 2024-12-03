@@ -1,4 +1,5 @@
-import '../../public/styles/reset.css'
+import '../../public/styles/normalize.css'
 import '../../public/styles/index.css'
 import '../../public/styles/calculator.css'
+import '../../public/styles/buttonsLayout.css'
 import '../../public/styles/colorScheme.css'

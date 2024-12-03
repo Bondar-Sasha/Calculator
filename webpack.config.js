@@ -45,7 +45,7 @@ module.exports = env => ({
       }),
    ],
 
-   // devtool: 'source-map',
+   devtool: 'source-map',
    devServer: {
       compress: true,
       port: process.env.DEV_PORT,
