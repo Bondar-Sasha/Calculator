@@ -24,6 +24,25 @@
    transition: transform 0.2s ease;
 }
 
+.degree {
+   position: relative;
+   sup {
+      position: absolute;
+      font-size: 0.65em;
+      top: 0.9px;
+      right: -6.5px;
+   }
+}
+.sqrt {
+   position: relative;
+   sup {
+      position: absolute;
+      font-size: 0.6em;
+      top: 0.3px;
+      left: -2px;
+   }
+}
+
 #x_y {
    grid-column: 3 / span 2;
    grid-row: 2;
