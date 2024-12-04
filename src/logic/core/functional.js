@@ -198,7 +198,7 @@ class CalculatorActions extends Calculator {
    }
 
    equal = () => {
-      if (this.expression.length !== 4) {
+      if ([1, 3].includes(this.expression.length)) {
          return false
       }
       this.expression = [{ operation: 'null' }, { icon: '', operation: 'number', values: [count(this.expression)] }]
