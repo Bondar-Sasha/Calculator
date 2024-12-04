@@ -1,7 +1,8 @@
 class Calculator {
    constructor() {
-      this.expression = []
-      this.UI = ''
+      this.expression = [{ operation: 'null' }]
+      this.UI = []
+      this.memory = 0
    }
    getExpression() {
       throw new Error('The "getExpression" method must be implemented')

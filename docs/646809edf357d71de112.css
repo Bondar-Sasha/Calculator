@@ -393,20 +393,34 @@ body {
    box-sizing: border-box;
    display: flex;
    justify-content: flex-end;
-   align-items: center;
+   align-items: flex-end;
    width: 85%;
    height: 4em;
-   padding: 1.15em 0.3em;
-   padding-bottom: 0;
+
    background-color: var(--screenFond);
 }
 #screen_data {
-   white-space: nowrap;
-   overflow-x: auto;
-   overflow-y: hidden;
-   font-size: 1.5em;
+   box-sizing: border-box;
+   width: 100%;
    height: 100%;
+   text-align: right;
+   white-space: nowrap;
+   overflow-x: scroll;
+   overflow-y: hidden;
+   padding: 0.8em 0.5em;
+   padding-bottom: 0;
+   font-size: 1.5em;
    color: var(--screenColor);
+}
+
+.sqrt_base {
+   text-decoration: underline;
+}
+.sup {
+   text-decoration: underline;
+}
+.sup_base {
+   text-decoration: underline;
 }
 
 #screen_data::-webkit-scrollbar-button {
@@ -414,6 +428,7 @@ body {
 }
 
 #screen_data::-webkit-scrollbar {
+   cursor: move;
    height: 0.33em;
 }
 
@@ -454,6 +469,21 @@ body {
    transition: transform 0.2s ease;
 }
 
+.degree {
+   cursor: pointer;
+
+   sup {
+      font-size: 0.65em;
+   }
+}
+.sqrt {
+   cursor: pointer;
+
+   sup {
+      font-size: 0.65em;
+   }
+}
+
 #x_y {
    grid-column: 3 / span 2;
    grid-row: 2;
@@ -490,4 +520,4 @@ body {
 }
 
 
-/*# sourceMappingURL=2edf425d78b7af10e983.css.map*/
+/*# sourceMappingURL=646809edf357d71de112.css.map*/

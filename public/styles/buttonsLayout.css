@@ -25,21 +25,17 @@
 }
 
 .degree {
-   position: relative;
+   cursor: pointer;
+
    sup {
-      position: absolute;
       font-size: 0.65em;
-      top: 0.9px;
-      right: -6.5px;
    }
 }
 .sqrt {
-   position: relative;
+   cursor: pointer;
+
    sup {
-      position: absolute;
-      font-size: 0.6em;
-      top: 0.3px;
-      left: -2px;
+      font-size: 0.65em;
    }
 }
 

@@ -1,20 +1,32 @@
+import lastEl from '../../../utils/lastEl.js'
+
 const tools = {
-   currentValueNumber: data => {
-      const el = data[data.length - 1]
-      return typeof el === 'number'
+   currentOperation: (data, values) => {
+      let result = false
+      values.forEach(value => {
+         if (lastEl(data).operation === value) {
+            result = true
+         }
+      })
+
+      return result
    },
-   dataLength_1: data => data.length === 1,
-   isMemory: value => !!value,
-   priority: () => true,
+   currentOperationNot: (data, values) => {
+      let result = true
+      values.forEach(value => {
+         if (lastEl(data).operation === value) {
+            result = false
+         }
+      })
+
+      return result
+   },
 }
 
 const validation = (data, validationData) => {
    let result = true
-   Object.entries(validationData).forEach(([key, expectedValue]) => {
-      const actualValue = tools[key](data)
-      if (actualValue !== expectedValue) {
-         result = false
-      }
+   Object.entries(validationData).forEach(([key, values]) => {
+      result = tools[key](data, values)
    })
    return result
 }

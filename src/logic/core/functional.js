@@ -1,231 +1,336 @@
+import lastEl from '../../utils/lastEl.js'
+import count from './count.js'
 import Calculator from './initialModel.js'
-import evaluateExpression from './count.js'
 import validation from './validation/handler.js'
 import rules from './validation/rules.js'
 
-class CalculatorActions extends Calculator {
-   getUI = () => this.UI
-   setUI = () => {
-      this.expression.forEach(item => {
-         this.UI = ''
+// import evaluateExpression from './count.js'
+// import validation from './validation/handler.js'
+// import rules from './validation/rules.js'
 
-         if (item['operation'] === 'sqrt') {
-            this.UI += `<span class="sqrt"><sup>${item.value[0]}</sup>&radic;${item.value[1] ?? ''}</span>`
-            console.log(this.UI)
-         } else if (item['operation'] === 'degree') {
-            this.UI += `<span class="degree">${item.value[1] ?? ''}<sup>${item.value[0]}</sup></span>`
+class CalculatorActions extends Calculator {
+   getUI = () => {
+      this.setUI()
+      return this.UI.join('')
+   }
+   setUI = () => {
+      this.UI = []
+      this.expression.forEach(item => {
+         if (item.operation === 'null') {
+            return false
+         } else if (item.operation === 'sqrt') {
+            this.UI.push(
+               item.change
+                  ? `<span class="sqrt"><sup class="sup">${item.values[0] ?? ''}</sup>&radic;<span>${item.values[1] ?? ''}</span></span>`
+                  : `<span class="sqrt"><sup>${item.values[0] ?? ''}</sup>&radic;<span class="sqrt_base">${item.values[1] ?? ''}</span></span>`,
+            )
+         } else if (item.operation === 'degree') {
+            this.UI.push(
+               item.change
+                  ? `<span class="degree"><span >${item.values[1] ?? ''}</span><sup class="sup">${item.values[0] ?? ''}</sup></span>`
+                  : `<span class="degree"><span class="sup_base">${item.values[1] ?? ''}</span><sup>${item.values[0] ?? ''}</sup></span>`,
+            )
          } else {
-            this.UI += item.icon + item.value[0]
+            this.UI.push(item.values[0] ?? '' + item.icon)
          }
       })
    }
-   lastIndex = () => this.expression.length - 1
-   lastDeepIndex = () => this.expression[this.lastIndex()].numbers.length - 1
 
    clear = () => {
-      this.expression = []
-      this.UI = ''
+      this.expression = [{ operation: 'null' }]
+      this.UI = []
       return true
    }
-   setValue = value => {
+   setValue = number => {
       return () => {
-         if (this.lastIndex() === -1) {
+         if (!validation(this.expression, rules.setNumber)) {
+            return false
+         }
+         if (lastEl(this.expression).operation === 'null') {
             this.expression.push({
                icon: '',
-               value: [value.toString()],
+               operation: 'number',
+               values: [number.toString()],
             })
-            this.setUI()
             return true
          }
-         if (this.expression[this.lastIndex()]['twoValue']) {
-            console.log(this.expression)
-            const values = this.expression[this.lastIndex()].value
-            if (this.expression[this.lastIndex()]['change']) {
-               values[0] ? (values[0] += value.toString()) : (values[0] = value.toString())
-               this.setUI()
+         if (lastEl(this.expression)['twoValue']) {
+            const values = lastEl(this.expression).values
+            if (lastEl(this.expression)['change']) {
+               values[0] ? (values[0] += number.toString()) : (values[0] = number.toString())
 
                return true
             } else {
-               values[1] ? (values[1] += value.toString()) : (values[1] = value.toString())
-               this.setUI()
+               values[1] ? (values[1] += number.toString()) : (values[1] = number.toString())
 
                return true
             }
          }
-         if (this.expression[this.lastIndex()]['operation']) {
+         if (lastEl(this.expression).operation !== 'number') {
             this.expression.push({
                icon: '',
-               value: [value.toString()],
+               operation: 'number',
+               values: [number.toString()],
             })
-            this.setUI()
-
             return true
          }
-         this.expression[this.lastIndex()].value[0] += value.toString()
-         this.setUI()
-
+         lastEl(this.expression).values[0] += number.toString()
          return true
       }
    }
 
    change_sign = () => {
-      // const lastElIndex = this.lastElIndex()
-      // const lastEl = this.data[lastElIndex]
-      // if (lastEl === '0' || lastEl === undefined) {
-      //    this.data = ['-']
-      //    return true
-      // }
-      // if (lastEl === '-' && this.data.length === 1) {
-      //    this.data = []
-      //    return true
-      // }
-      // if (!Number(lastEl)) return false
-      // if (lastEl[0] === '-') {
-      //    this.data[lastElIndex] = lastEl.substring(1)
-      //    return true
-      // }
-      // if (this.data[lastElIndex - 1] === '+') {
-      //    this.data[lastElIndex - 1] = '-'
-      //    return true
-      // }
-      // if (this.data[lastElIndex - 1] === '-') {
-      //    this.data[lastElIndex - 1] = '+'
-      //    return true
-      // }
-      // this.data[lastElIndex] = '-' + lastEl
-      // return true
+      if (!validation(this.expression, rules.change_sign)) {
+         return false
+      }
+      if (this.expression[this.expression.length - 2].operation === 'plus') {
+         this.expression[this.expression.length - 2].operation = 'minus'
+         this.expression[this.expression.length - 2].icon = '-'
+         return true
+      }
+      if (this.expression[this.expression.length - 2].operation === 'minus') {
+         this.expression[this.expression.length - 2].operation = 'plus'
+         this.expression[this.expression.length - 2].icon = '+'
+
+         return true
+      }
+      if (lastEl(this.expression).values[0][0] === '-') {
+         lastEl(this.expression).values[0] = lastEl(this.expression).values[0].slice(1)
+         return true
+      }
+      lastEl(this.expression).values[0] = '-' + lastEl(this.expression).values[0]
+      return true
    }
 
    percent = () => {
-      // this.addOperator('%')
-      // return true
+      if (!validation(this.expression, rules.percent)) {
+         return false
+      }
+      if (this.expression.length === 4) {
+         this.expression = [{ operation: 'null' }, { icon: '', operation: 'number', values: [count(this.expression)] }]
+      }
+      this.expression.push({
+         icon: '%',
+         operation: 'percent',
+         values: [],
+      })
+      return true
    }
 
    division = () => {
-      // this.addOperator('/')
-      // return true
+      if (!validation(this.expression, rules.divide)) {
+         return false
+      }
+      if (this.expression.length === 4) {
+         this.expression = [{ operation: 'null' }, { icon: '', operation: 'number', values: [count(this.expression)] }]
+      }
+      this.expression.push({
+         icon: '/',
+         operation: 'divide',
+         values: [],
+      })
+      return true
    }
 
    multiply = () => {
-      // this.addOperator('*')
-      // return true
+      if (!validation(this.expression, rules.multiply)) {
+         return false
+      }
+      if (this.expression.length === 4) {
+         this.expression = [{ operation: 'null' }, { icon: '', operation: 'number', values: [count(this.expression)] }]
+      }
+      this.expression.push({
+         icon: '*',
+         operation: 'multiply',
+         values: [],
+      })
+      return true
    }
 
    minus = () => {
-      // const lastElIndex = this.lastElIndex()
-      // const lastEl = this.data[lastElIndex]
-      // if (this.data.length === 0) {
-      //    this.data = ['-']
-      //    return true
-      // }
-      // const isNum = Number(lastEl)
-      // if (isNum || isNum === 0) {
-      //    this.data = [...this.data, '-']
-      //    return true
-      // }
-      // this.data[lastElIndex] = '-'
-      // return true
+      if (!validation(this.expression, rules.minus)) {
+         return false
+      }
+      if (this.expression.length === 4) {
+         this.expression = [{ operation: 'null' }, { icon: '', operation: 'number', values: [count(this.expression)] }]
+      }
+
+      if (lastEl(this.expression) === 'plus') {
+         lastEl(this.expression).operation = 'minus'
+         return true
+      }
+
+      this.expression.push({
+         icon: '-',
+         operation: 'minus',
+         values: [],
+      })
+      return true
    }
 
    sum = () => {
-      // const lastElIndex = this.lastElIndex()
-      // const lastEl = this.data[lastElIndex]
-      // if (lastEl === '-') {
-      //    this.data = []
-      //    return true
-      // }
-      // const isNum = Number(lastEl)
-      // if (isNum || isNum === 0) {
-      //    this.data = [...this.data, '+']
-      //    return true
-      // }
-      // this.data[lastElIndex] = '+'
-      // return true
+      if (!validation(this.expression, rules.plus)) {
+         return false
+      }
+      if (this.expression.length === 4) {
+         this.expression = [{ operation: 'null' }, { icon: '', operation: 'number', values: [count(this.expression)] }]
+      }
+
+      if (lastEl(this.expression) === 'minus') {
+         lastEl(this.expression).operation = 'plus'
+         return true
+      }
+
+      this.expression.push({
+         icon: '+',
+         operation: 'plus',
+         values: [],
+      })
+      return true
    }
 
    dot = () => {
-      // const lastElIndex = this.lastElIndex()
-      // const lastEl = this.data[lastElIndex]
-      // if (lastEl && lastEl.includes('.')) return false
-      // if (lastEl === '0') {
-      //    this.data[lastElIndex] += '.'
-      //    return true
-      // }
-      // if (Number(lastEl)) {
-      //    this.data[lastElIndex] += '.'
-      //    return true
-      // }
+      if (!validation(this.expression, rules.dot)) {
+         return false
+      }
+      lastEl(this.expression).values[0] += '.'
+      return true
    }
 
    equal = () => {
-      // const lastElIndex = this.lastElIndex()
-      // const lastEl = this.data[lastElIndex]
-      // if (this.data.length === 0) return false
-      // if (lastEl === 'error') {
-      //    this.data = []
-      //    return true
-      // }
-      // if (!Number(lastEl)) this.data = this.data.slice(0, -1)
-      // const result = evaluateExpression(this.data)
-      // this.data = [result]
-      // return true
+      if (this.expression.length !== 4) {
+         return false
+      }
+      this.expression = [{ operation: 'null' }, { icon: '', operation: 'number', values: [count(this.expression)] }]
+      return true
    }
    cancel = () => {}
-   MC = () => {}
-   MR = () => {}
-   M_MINUS = () => {}
-   M_PLUS = () => {}
-   factorial = () => {}
-   _1_x = () => {}
-   ten_x = () => {}
-   degree = () => {}
+   MC = () => {
+      this.memory = ''
+      alert(this.memory)
+      return true
+   }
+   MR = () => {
+      if (!this.memory) {
+         return false
+      }
+      this.expression = [{ operation: 'null' }, { icon: '', operation: 'number', values: [this.memory] }]
+      return true
+   }
+   M_MINUS = () => {
+      if (!(this.expression.length === 2 && this.expression[1].operation === 'number')) {
+         return false
+      }
+
+      this.memory -= Number(this.expression[1].values[0])
+      alert(this.memory)
+      return true
+   }
+   M_PLUS = () => {
+      if (!(this.expression.length === 2 && this.expression[1].operation === 'number')) {
+         return false
+      }
+
+      this.memory += Number(this.expression[1].values[0])
+      alert(this.memory)
+      return true
+   }
+   factorial = () => {
+      if (!validation(this.expression, rules.factorial)) {
+         return false
+      }
+      if (this.expression.length === 4) {
+         this.expression = [{ operation: 'null' }, { icon: '', operation: 'number', values: [count(this.expression)] }]
+      }
+
+      this.expression.push({
+         icon: '!',
+         operation: 'factorial',
+         values: [],
+      })
+   }
+   _1_x = () => {
+      if (!validation(this.expression, rules._1_x)) {
+         return false
+      }
+      this.setValue(1)()
+      this.division()
+      return true
+   }
+   ten_x = () => {
+      if (!validation(this.expression, rules.degree)) {
+         return false
+      }
+      this.expression.push({
+         icon: '',
+         operation: 'degree',
+         twoValue: true,
+         change: true,
+         values: [null, '10'],
+      })
+
+      return true
+   }
+   degree = data => {
+      return () => {
+         if (!validation(this.expression, rules.degree)) {
+            return false
+         }
+         if (data) {
+            this.expression.push({
+               icon: '',
+               operation: 'degree',
+               twoValue: true,
+               change: false,
+               values: [data.toString()],
+            })
+
+            return true
+         } else {
+            this.expression.push({
+               icon: '',
+               operation: 'degree',
+               twoValue: true,
+               change: false,
+               values: [],
+            })
+
+            return true
+         }
+      }
+   }
    sqrt = data => {
       return () => {
+         if (!validation(this.expression, rules.sqrt)) {
+            return false
+         }
          if (data) {
-            if (this.lastIndex() === -1) {
-               this.expression.push({
-                  icon: '',
-                  operation: 'sqrt',
-                  twoValue: true,
-                  change: false,
-                  value: [data.toString()],
-               })
-               this.setUI()
-               return true
-            }
-            if (
-               !this.expression[this.lastIndex()]['operation'] ||
-               this.expression[this.lastIndex()]['operation'] === 'sqrt' ||
-               this.expression[this.lastIndex()]['operation'] === 'degree'
-            ) {
-               return false
-            }
             this.expression.push({
                icon: '',
                operation: 'sqrt',
                twoValue: true,
                change: false,
-               value: [data.toString()],
+               values: [data.toString()],
             })
-            this.setUI()
+
             return true
          } else {
-            if (this.lastIndex() === -1) {
-               this.expression.push({
-                  icon: '',
-                  operation: 'sqrt',
-                  value: [],
-               })
-               this.setUI()
-               return true
-            }
+            this.expression.push({
+               icon: '',
+               operation: 'sqrt',
+               twoValue: true,
+               change: true,
+               values: [],
+            })
+
+            return true
          }
       }
    }
 
    getActions = () => {
       // eslint-disable-next-line no-unused-vars
-      const { getUI, setUI, lastIndex, lastDeepIndex, ...result } = this
+      const { getUI, setUI, ...result } = this
       return result
    }
 }

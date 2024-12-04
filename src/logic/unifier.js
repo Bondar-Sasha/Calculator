@@ -10,6 +10,7 @@ dataInput.addEventListener('click', () => {
    if (shared && shared['twoValue']) {
       shared['change'] = !shared['change']
    }
+   dataInput.innerHTML = calculator.getUI()
 })
 
 Object.keys(Buttons).forEach(item => {
