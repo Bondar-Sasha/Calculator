@@ -33,7 +33,9 @@ export default function count(expression) {
          return utils.factorial(copy[0].values[0])
       }
       if (copy.length === 1 && copyLastEl.operation === 'number') {
-         return utils[lastEl(copy).operation](lastEl(copy).values)
+         const res = utils[lastEl(copy).operation](lastEl(copy).values)
+         if (isNaN(res)) throw new Error('')
+         return res
       }
       if (copy.length === 1 && ['sqrt', 'degree'].includes(copyLastEl.operation)) {
          if (copyLastEl.values.length !== 2) throw new Error('')
@@ -45,7 +47,7 @@ export default function count(expression) {
          copy[1].operation,
          utils[copy[2].operation](copy[2].values),
       )
-      if (result === null) throw new Error('Result is null')
+      if ([null, Infinity].includes(result)) throw new Error('Result is null')
       return result.toString()
    } catch (error) {
       return 'error'
