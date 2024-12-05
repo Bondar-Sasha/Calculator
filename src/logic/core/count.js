@@ -1,10 +1,11 @@
 import factorial from '../../utils/factorial.js'
+import lastEl from '../../utils/lastEl.js'
 
 const utils = {
    number: arr => Number(arr[0]),
    degree: arr => Number(arr[1]) ** Number(arr[0]),
    sqrt: arr => Number(arr[1]) ** (1 / Number(arr[0])),
-   factorial: arr => factorial(Number(arr[0])),
+   factorial: n => factorial(Number(n)),
 
    count: (first, operation, second) => {
       switch (operation) {
@@ -16,6 +17,8 @@ const utils = {
             return first * second
          case 'divide':
             return first / second
+         case 'percent':
+            return second / first
          default:
             return null
       }
@@ -24,17 +27,26 @@ const utils = {
 
 export default function count(expression) {
    try {
-      let result = null
-      if (expression.length === 2) {
-         result = utils[expression[1].operation](expression[1].values)
-         if (!result) throw new Error('')
-         return result
+      const copy = JSON.parse(JSON.stringify(expression))
+      const copyLastEl = lastEl(copy)
+      if (copyLastEl.operation === 'factorial') {
+         return utils.factorial(copy[0].values[0])
       }
-      const first = utils[expression[1].operation](expression[1].values)
-      let second = utils[expression[3].operation](expression[3].values)
-      result = utils.count(first, expression[2].operation, second)
-      if (!result) throw new Error('')
-      return result
+      if (copy.length === 1 && copyLastEl.operation === 'number') {
+         return utils[lastEl(copy).operation](lastEl(copy).values)
+      }
+      if (copy.length === 1 && ['sqrt', 'degree'].includes(copyLastEl.operation)) {
+         if (copyLastEl.values.length !== 2) throw new Error('')
+         return utils[lastEl(copy).operation](lastEl(copy).values)
+      }
+      let result = null
+      result = utils.count(
+         utils[copy[0].operation](copy[0].values),
+         copy[1].operation,
+         utils[copy[2].operation](copy[2].values),
+      )
+      if (result === null) throw new Error('Result is null')
+      return result.toString()
    } catch (error) {
       return 'error'
    }

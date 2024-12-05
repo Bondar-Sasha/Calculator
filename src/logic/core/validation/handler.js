@@ -25,8 +25,9 @@ const tools = {
 
 const validation = (data, validationData) => {
    let result = true
+   const prepered = data.length === 0 ? [{ operation: 'null' }] : data
    Object.entries(validationData).forEach(([key, values]) => {
-      result = tools[key](data, values)
+      result = tools[key](prepered, values)
    })
    return result
 }

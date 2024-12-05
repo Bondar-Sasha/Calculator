@@ -16,9 +16,7 @@ class CalculatorActions extends Calculator {
    setUI = () => {
       this.UI = []
       this.expression.forEach(item => {
-         if (item.operation === 'null') {
-            return false
-         } else if (item.operation === 'sqrt') {
+         if (item.operation === 'sqrt') {
             this.UI.push(
                item.change
                   ? `<span class="sqrt"><sup class="sup">${item.values[0] ?? ''}</sup>&radic;<span>${item.values[1] ?? ''}</span></span>`
@@ -37,7 +35,7 @@ class CalculatorActions extends Calculator {
    }
 
    clear = () => {
-      this.expression = [{ operation: 'null' }]
+      this.expression = []
       this.UI = []
       return true
    }
@@ -46,7 +44,7 @@ class CalculatorActions extends Calculator {
          if (!validation(this.expression, rules.setNumber)) {
             return false
          }
-         if (lastEl(this.expression).operation === 'null') {
+         if (!lastEl(this.expression)) {
             this.expression.push({
                icon: '',
                operation: 'number',
@@ -54,6 +52,7 @@ class CalculatorActions extends Calculator {
             })
             return true
          }
+
          if (lastEl(this.expression)['twoValue']) {
             const values = lastEl(this.expression).values
             if (lastEl(this.expression)['change']) {
@@ -65,6 +64,16 @@ class CalculatorActions extends Calculator {
 
                return true
             }
+         }
+         if (this.expression.length === 1 && lastEl(this.expression).operation === 'minus') {
+            this.expression = [
+               {
+                  icon: '',
+                  operation: 'number',
+                  values: ['-' + number.toString()],
+               },
+            ]
+            return true
          }
          if (lastEl(this.expression).operation !== 'number') {
             this.expression.push({
@@ -83,31 +92,39 @@ class CalculatorActions extends Calculator {
       if (!validation(this.expression, rules.change_sign)) {
          return false
       }
-      if (this.expression[this.expression.length - 2].operation === 'plus') {
-         this.expression[this.expression.length - 2].operation = 'minus'
-         this.expression[this.expression.length - 2].icon = '-'
-         return true
+      if (this.expression.length === 3) {
+         if (this.expression[this.expression.length - 2].operation === 'plus') {
+            this.expression[this.expression.length - 2].operation = 'minus'
+            this.expression[this.expression.length - 2].icon = '-'
+            return true
+         }
+         if (this.expression[this.expression.length - 2].operation === 'minus') {
+            this.expression[this.expression.length - 2].operation = 'plus'
+            this.expression[this.expression.length - 2].icon = '+'
+            return true
+         }
       }
-      if (this.expression[this.expression.length - 2].operation === 'minus') {
-         this.expression[this.expression.length - 2].operation = 'plus'
-         this.expression[this.expression.length - 2].icon = '+'
 
-         return true
-      }
       if (lastEl(this.expression).values[0][0] === '-') {
          lastEl(this.expression).values[0] = lastEl(this.expression).values[0].slice(1)
          return true
+      } else {
+         lastEl(this.expression).values[0] = '-' + lastEl(this.expression).values[0]
+         return true
       }
-      lastEl(this.expression).values[0] = '-' + lastEl(this.expression).values[0]
-      return true
    }
 
    percent = () => {
       if (!validation(this.expression, rules.percent)) {
          return false
       }
-      if (this.expression.length === 4) {
-         this.expression = [{ operation: 'null' }, { icon: '', operation: 'number', values: [count(this.expression)] }]
+      if (this.expression.length === 3) {
+         this.expression = [
+            { icon: '', operation: 'number', values: [count(this.expression)] },
+            { icon: '%', operation: 'percent', values: [] },
+         ]
+
+         return true
       }
       this.expression.push({
          icon: '%',
@@ -121,8 +138,13 @@ class CalculatorActions extends Calculator {
       if (!validation(this.expression, rules.divide)) {
          return false
       }
-      if (this.expression.length === 4) {
-         this.expression = [{ operation: 'null' }, { icon: '', operation: 'number', values: [count(this.expression)] }]
+      if (this.expression.length === 3) {
+         this.expression = [
+            { icon: '', operation: 'number', values: [count(this.expression)] },
+            { icon: '/', operation: 'divide', values: [] },
+         ]
+
+         return true
       }
       this.expression.push({
          icon: '/',
@@ -136,8 +158,12 @@ class CalculatorActions extends Calculator {
       if (!validation(this.expression, rules.multiply)) {
          return false
       }
-      if (this.expression.length === 4) {
-         this.expression = [{ operation: 'null' }, { icon: '', operation: 'number', values: [count(this.expression)] }]
+      if (this.expression.length === 3) {
+         this.expression = [
+            { icon: '', operation: 'number', values: [count(this.expression)] },
+            { icon: '*', operation: 'multiply', values: [] },
+         ]
+         return true
       }
       this.expression.push({
          icon: '*',
@@ -151,8 +177,12 @@ class CalculatorActions extends Calculator {
       if (!validation(this.expression, rules.minus)) {
          return false
       }
-      if (this.expression.length === 4) {
-         this.expression = [{ operation: 'null' }, { icon: '', operation: 'number', values: [count(this.expression)] }]
+      if (this.expression.length === 3) {
+         this.expression = [
+            { icon: '', operation: 'number', values: [count(this.expression)] },
+            { icon: '-', operation: 'minus', values: [] },
+         ]
+         return true
       }
 
       if (lastEl(this.expression) === 'plus') {
@@ -172,10 +202,17 @@ class CalculatorActions extends Calculator {
       if (!validation(this.expression, rules.plus)) {
          return false
       }
-      if (this.expression.length === 4) {
-         this.expression = [{ operation: 'null' }, { icon: '', operation: 'number', values: [count(this.expression)] }]
+      if (this.expression.length === 3) {
+         this.expression = [
+            { icon: '', operation: 'number', values: [count(this.expression)] },
+            { icon: '+', operation: 'plus', values: [] },
+         ]
+         return true
       }
-
+      if (this.expression.length === 2 && lastEl(this.expression) === 'minus') {
+         this.expression = []
+         return true
+      }
       if (lastEl(this.expression) === 'minus') {
          lastEl(this.expression).operation = 'plus'
          return true
@@ -193,15 +230,16 @@ class CalculatorActions extends Calculator {
       if (!validation(this.expression, rules.dot)) {
          return false
       }
+      if (lastEl(this.expression).values[0].includes('.')) {
+         return false
+      }
+
       lastEl(this.expression).values[0] += '.'
       return true
    }
 
    equal = () => {
-      if ([1, 3].includes(this.expression.length)) {
-         return false
-      }
-      this.expression = [{ operation: 'null' }, { icon: '', operation: 'number', values: [count(this.expression)] }]
+      this.expression = [{ icon: '', operation: 'number', values: [count(this.expression)] }]
       return true
    }
    cancel = () => {}
@@ -214,24 +252,24 @@ class CalculatorActions extends Calculator {
       if (!this.memory) {
          return false
       }
-      this.expression = [{ operation: 'null' }, { icon: '', operation: 'number', values: [this.memory] }]
+      this.expression = [{ icon: '', operation: 'number', values: [this.memory] }]
       return true
    }
    M_MINUS = () => {
-      if (!(this.expression.length === 2 && this.expression[1].operation === 'number')) {
+      if (!(this.expression.length === 1 && lastEl(this.expression).operation === 'number')) {
          return false
       }
 
-      this.memory -= Number(this.expression[1].values[0])
+      this.memory = Number(this.memory) - Number(lastEl(this.expression).values[0])
       alert(this.memory)
       return true
    }
    M_PLUS = () => {
-      if (!(this.expression.length === 2 && this.expression[1].operation === 'number')) {
+      if (!(this.expression.length === 1 && lastEl(this.expression).operation === 'number')) {
          return false
       }
 
-      this.memory += Number(this.expression[1].values[0])
+      this.memory = Number(this.memory) + Number(lastEl(this.expression).values[0])
       alert(this.memory)
       return true
    }
@@ -239,8 +277,12 @@ class CalculatorActions extends Calculator {
       if (!validation(this.expression, rules.factorial)) {
          return false
       }
-      if (this.expression.length === 4) {
-         this.expression = [{ operation: 'null' }, { icon: '', operation: 'number', values: [count(this.expression)] }]
+      if (this.expression.length === 3) {
+         this.expression = [
+            { icon: '', operation: 'number', values: [count(this.expression)] },
+            { icon: '!', operation: 'factorial', values: [] },
+         ]
+         return true
       }
 
       this.expression.push({

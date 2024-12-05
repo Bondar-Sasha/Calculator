@@ -11,6 +11,7 @@
    "extends": ["eslint:recommended", "plugin:prettier/recommended"],
    "plugins": ["html"],
    "rules": {
+      "no-undef": "off",
       "no-console": "error",
       "eol-last": "off",
       "quotes": ["error", "single"],
