@@ -3,6 +3,7 @@ class Calculator {
       this.expression = []
       this.UI = []
       this.memory = 0
+      this.history = ''
    }
 
    getUI() {
@@ -13,6 +14,9 @@ class Calculator {
    }
    getActions() {
       throw new Error('The "getActions" method must be implemented')
+   }
+   getExpressionHandlers() {
+      throw new Error('The "getExpressionHandlers" method must be implemented')
    }
 }
 export default Calculator

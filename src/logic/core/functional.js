@@ -1,5 +1,6 @@
+import formatNumber from '../../utils/formatNumber.js'
 import lastEl from '../../utils/lastEl.js'
-import count from './count.js'
+import count, { checkRes } from './count.js'
 import Calculator from './initialModel.js'
 import validation from './validation/handler.js'
 import rules from './validation/rules.js'
@@ -13,6 +14,7 @@ class CalculatorActions extends Calculator {
       this.setUI()
       return this.UI.join('')
    }
+
    setUI = () => {
       this.UI = []
       this.expression.forEach(item => {
@@ -29,13 +31,43 @@ class CalculatorActions extends Calculator {
                   : `<span class="degree"><span class="sup_base">${item.values[1] ?? ''}</span><sup>${item.values[0] ?? ''}</sup></span>`,
             )
          } else {
-            this.UI.push(item.values[0] ?? '' + item.icon)
+            this.UI.push((item.values[0] ?? '') + item.icon)
          }
       })
    }
+   getExpressionHandlers = history => ({
+      add: item => {
+         if (lastEl(this.expression)?.values[0] === 'error') {
+            this.expression = []
+            this.history = ''
+            return false
+         }
+         this.expression = [...this.expression, item]
+         this.history = history
+         return true
+      },
+      rewrite: arr => {
+         this.expression = arr
+         this.history = history
+         return true
+      },
+      change: newItem => {
+         return index => {
+            if (index) {
+               this.expression[index] = newItem
+            } else {
+               this.expression[this.expression.length - 1] = newItem
+            }
+            this.history = history
+
+            return true
+         }
+      },
+   })
 
    clear = () => {
-      this.expression = []
+      const { rewrite } = this.getExpressionHandlers('')
+      rewrite([])
       this.UI = []
       return true
    }
@@ -44,46 +76,68 @@ class CalculatorActions extends Calculator {
          if (!validation(this.expression, rules.setNumber)) {
             return false
          }
+         const { add, rewrite, change } = this.getExpressionHandlers('number')
          if (!lastEl(this.expression)) {
-            this.expression.push({
+            add({
                icon: '',
                operation: 'number',
                values: [number.toString()],
             })
+
             return true
          }
+         if (this.history === 'equal') {
+            rewrite([
+               {
+                  icon: '',
+                  operation: 'number',
+                  values: [number.toString()],
+               },
+            ])
 
+            return true
+         }
          if (lastEl(this.expression)['twoValue']) {
             const values = lastEl(this.expression).values
             if (lastEl(this.expression)['change']) {
                values[0] ? (values[0] += number.toString()) : (values[0] = number.toString())
-
-               return true
             } else {
                values[1] ? (values[1] += number.toString()) : (values[1] = number.toString())
-
-               return true
             }
+
+            return true
          }
          if (this.expression.length === 1 && lastEl(this.expression).operation === 'minus') {
-            this.expression = [
+            rewrite([
                {
                   icon: '',
                   operation: 'number',
                   values: ['-' + number.toString()],
                },
-            ]
+            ])
+
             return true
          }
          if (lastEl(this.expression).operation !== 'number') {
-            this.expression.push({
+            add({
                icon: '',
                operation: 'number',
                values: [number.toString()],
             })
+
             return true
          }
-         lastEl(this.expression).values[0] += number.toString()
+         if (number.toString() === '0') {
+            if (lastEl(this.expression).values[0][0] === '0' && lastEl(this.expression).values[0][1] !== '.') {
+               return false
+            }
+         }
+         change({
+            icon: '',
+            operation: 'number',
+            values: [lastEl(this.expression).values[0] + number.toString()],
+         })()
+
          return true
       }
    }
@@ -92,15 +146,21 @@ class CalculatorActions extends Calculator {
       if (!validation(this.expression, rules.change_sign)) {
          return false
       }
+      const { change } = this.getExpressionHandlers()
+
       if (this.expression.length === 3) {
          if (this.expression[this.expression.length - 2].operation === 'plus') {
-            this.expression[this.expression.length - 2].operation = 'minus'
-            this.expression[this.expression.length - 2].icon = '-'
+            change({ icon: '-', operation: 'minus', values: [...this.expression[this.expression.length - 2].values] })(
+               this.length - 2,
+            )
+
             return true
          }
          if (this.expression[this.expression.length - 2].operation === 'minus') {
-            this.expression[this.expression.length - 2].operation = 'plus'
-            this.expression[this.expression.length - 2].icon = '+'
+            change({ icon: '+', operation: 'plus', values: [...this.expression[this.expression.length - 2].values] })(
+               this.length - 2,
+            )
+
             return true
          }
       }
@@ -118,19 +178,22 @@ class CalculatorActions extends Calculator {
       if (!validation(this.expression, rules.percent)) {
          return false
       }
+      const { add, rewrite } = this.getExpressionHandlers('percent')
+
       if (this.expression.length === 3) {
-         this.expression = [
+         rewrite([
             { icon: '', operation: 'number', values: [count(this.expression)] },
             { icon: '%', operation: 'percent', values: [] },
-         ]
+         ])
 
          return true
       }
-      this.expression.push({
+      add({
          icon: '%',
          operation: 'percent',
          values: [],
       })
+
       return true
    }
 
@@ -138,19 +201,22 @@ class CalculatorActions extends Calculator {
       if (!validation(this.expression, rules.divide)) {
          return false
       }
+      const { add, rewrite } = this.getExpressionHandlers('divide')
+
       if (this.expression.length === 3) {
-         this.expression = [
+         rewrite([
             { icon: '', operation: 'number', values: [count(this.expression)] },
             { icon: '/', operation: 'divide', values: [] },
-         ]
+         ])
 
          return true
       }
-      this.expression.push({
+      add({
          icon: '/',
          operation: 'divide',
          values: [],
       })
+
       return true
    }
 
@@ -158,18 +224,22 @@ class CalculatorActions extends Calculator {
       if (!validation(this.expression, rules.multiply)) {
          return false
       }
+      const { add, rewrite } = this.getExpressionHandlers('multiply')
+
       if (this.expression.length === 3) {
-         this.expression = [
+         rewrite([
             { icon: '', operation: 'number', values: [count(this.expression)] },
             { icon: '*', operation: 'multiply', values: [] },
-         ]
+         ])
+
          return true
       }
-      this.expression.push({
+      add({
          icon: '*',
          operation: 'multiply',
          values: [],
       })
+
       return true
    }
 
@@ -177,24 +247,29 @@ class CalculatorActions extends Calculator {
       if (!validation(this.expression, rules.minus)) {
          return false
       }
+      const { add, rewrite } = this.getExpressionHandlers('minus')
+
       if (this.expression.length === 3) {
-         this.expression = [
+         rewrite([
             { icon: '', operation: 'number', values: [count(this.expression)] },
             { icon: '-', operation: 'minus', values: [] },
-         ]
+         ])
+
          return true
       }
 
       if (lastEl(this.expression) === 'plus') {
          lastEl(this.expression).operation = 'minus'
+
          return true
       }
 
-      this.expression.push({
+      add({
          icon: '-',
          operation: 'minus',
          values: [],
       })
+
       return true
    }
 
@@ -202,34 +277,43 @@ class CalculatorActions extends Calculator {
       if (!validation(this.expression, rules.plus)) {
          return false
       }
+      const { add, rewrite } = this.getExpressionHandlers('plus')
+
       if (this.expression.length === 3) {
-         this.expression = [
+         rewrite([
             { icon: '', operation: 'number', values: [count(this.expression)] },
             { icon: '+', operation: 'plus', values: [] },
-         ]
+         ])
+
          return true
       }
       if (this.expression.length === 2 && lastEl(this.expression) === 'minus') {
-         this.expression = []
+         rewrite([])
+         this.history = ''
          return true
       }
       if (lastEl(this.expression) === 'minus') {
          lastEl(this.expression).operation = 'plus'
+
          return true
       }
 
-      this.expression.push({
+      add({
          icon: '+',
          operation: 'plus',
          values: [],
       })
+
       return true
    }
 
    dot = () => {
+      //
+
       if (!validation(this.expression, rules.dot)) {
          return false
       }
+
       if (lastEl(this.expression).values[0].includes('.')) {
          return false
       }
@@ -239,7 +323,10 @@ class CalculatorActions extends Calculator {
    }
 
    equal = () => {
-      this.expression = [{ icon: '', operation: 'number', values: [count(this.expression)] }]
+      const { rewrite } = this.getExpressionHandlers('equal')
+
+      rewrite([{ icon: '', operation: 'number', values: [count(this.expression)] }])
+
       return true
    }
    cancel = () => {}
@@ -252,7 +339,11 @@ class CalculatorActions extends Calculator {
       if (!this.memory) {
          return false
       }
-      this.expression = [{ icon: '', operation: 'number', values: [this.memory] }]
+      if (this.expression.length === 3 && lastEl(this.expression).operation === 'number') {
+         lastEl(this.expression).values[0] = this.memory
+         return true
+      }
+      this.setValue(this.memory)()
       return true
    }
    M_MINUS = () => {
@@ -277,33 +368,51 @@ class CalculatorActions extends Calculator {
       if (!validation(this.expression, rules.factorial)) {
          return false
       }
-      if (this.expression.length === 3) {
-         this.expression = [
-            { icon: '', operation: 'number', values: [count(this.expression)] },
-            { icon: '!', operation: 'factorial', values: [] },
-         ]
+
+      const { change, rewrite } = this.getExpressionHandlers('factorial')
+
+      if (this.expression.length === 3 && lastEl(this.expression).operation !== 'number') {
+         rewrite([{ icon: '!', operation: 'factorial', values: [count(this.expression)] }])
+
          return true
       }
 
-      this.expression.push({
+      change({
          icon: '!',
          operation: 'factorial',
-         values: [],
-      })
+         values: [lastEl(this.expression).values[0]],
+      })()
+
+      return true
    }
    _1_x = () => {
       if (!validation(this.expression, rules._1_x)) {
          return false
       }
-      this.setValue(1)()
-      this.division()
+      const { change } = this.getExpressionHandlers('number')
+
+      if (lastEl(this.expression)?.values[0] === 'error') {
+         this.expression = []
+         this.history = ''
+         return true
+      }
+      const res = formatNumber(1 / lastEl(this.expression).values[0], 6)
+      change({
+         icon: '',
+         operation: 'number',
+         values: [!checkRes(res) ? 'error' : res],
+      })()
+
       return true
    }
    ten_x = () => {
       if (!validation(this.expression, rules.degree)) {
          return false
       }
-      this.expression.push({
+      const { add } = this.getExpressionHandlers('degree')
+      if (lastEl(this.expression)?.operation === 'number' && lastEl(this.expression).values[0] !== 'error') return false
+
+      add({
          icon: '',
          operation: 'degree',
          twoValue: true,
@@ -318,8 +427,21 @@ class CalculatorActions extends Calculator {
          if (!validation(this.expression, rules.degree)) {
             return false
          }
+         const { add, change } = this.getExpressionHandlers('degree')
+
          if (data) {
-            this.expression.push({
+            if (lastEl(this.expression)?.operation === 'number') {
+               change({
+                  icon: '',
+                  operation: 'degree',
+                  twoValue: true,
+                  change: false,
+                  values: [data.toString(), lastEl(this.expression).values[0]],
+               })()
+
+               return true
+            }
+            add({
                icon: '',
                operation: 'degree',
                twoValue: true,
@@ -329,7 +451,18 @@ class CalculatorActions extends Calculator {
 
             return true
          } else {
-            this.expression.push({
+            if (lastEl(this.expression)?.operation === 'number') {
+               change({
+                  icon: '',
+                  operation: 'degree',
+                  twoValue: true,
+                  change: true,
+                  values: [null, lastEl(this.expression).values[0]],
+               })()
+
+               return true
+            }
+            add({
                icon: '',
                operation: 'degree',
                twoValue: true,
@@ -346,8 +479,21 @@ class CalculatorActions extends Calculator {
          if (!validation(this.expression, rules.sqrt)) {
             return false
          }
+         const { add, change } = this.getExpressionHandlers('sqrt')
+
          if (data) {
-            this.expression.push({
+            if (lastEl(this.expression)?.operation === 'number') {
+               change({
+                  icon: '',
+                  operation: 'sqrt',
+                  twoValue: true,
+                  change: false,
+                  values: [data.toString(), lastEl(this.expression).values[0]],
+               })()
+
+               return true
+            }
+            add({
                icon: '',
                operation: 'sqrt',
                twoValue: true,
@@ -357,11 +503,22 @@ class CalculatorActions extends Calculator {
 
             return true
          } else {
-            this.expression.push({
+            if (lastEl(this.expression)?.operation === 'number') {
+               change({
+                  icon: '',
+                  operation: 'sqrt',
+                  twoValue: true,
+                  change: true,
+                  values: [null, lastEl(this.expression).values[0]],
+               })()
+
+               return true
+            }
+            add({
                icon: '',
                operation: 'sqrt',
                twoValue: true,
-               change: true,
+               change: false,
                values: [],
             })
 
@@ -372,8 +529,8 @@ class CalculatorActions extends Calculator {
 
    getActions = () => {
       // eslint-disable-next-line no-unused-vars
-      const { getUI, setUI, ...result } = this
-      return result
+
+      return this
    }
 }
 

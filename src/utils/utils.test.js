@@ -1,4 +1,5 @@
 import factorial from './factorial'
+import formatNumber from './formatNumber'
 import lastEl from './lastEl'
 
 describe('Utils', () => {
@@ -22,5 +23,13 @@ describe('Utils', () => {
       test('empty', () => {
          expect(lastEl(arr2)).toBe(undefined)
       })
+   })
+   describe('formatNumber', () => {
+      expect(formatNumber('120.1119', 3)).toBe('120.112')
+      expect(formatNumber('120.9999', 3)).toBe('121')
+      expect(formatNumber('-120.9999', 3)).toBe('-121')
+      expect(formatNumber('120', 3)).toBe('120')
+      expect(formatNumber('-120.111', 3)).toBe('-120.111')
+      expect(formatNumber('-120', 3)).toBe('-120')
    })
 })
