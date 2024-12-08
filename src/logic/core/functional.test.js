@@ -90,12 +90,13 @@ describe('Logic', () => {
             values: [],
          },
       ])
+      calculator.setValue(1)()
       calculator.minus()
       expect(calculator.expression).toEqual([
          {
             icon: '',
             operation: 'number',
-            values: ['-1'],
+            values: ['-2'],
          },
          {
             icon: '-',
@@ -103,7 +104,6 @@ describe('Logic', () => {
             values: [],
          },
       ])
-      calculator.setValue(1)()
       calculator.minus()
       expect(calculator.expression).toEqual([
          {
@@ -132,39 +132,6 @@ describe('Logic', () => {
       ])
       calculator.change_sign()
       expect(calculator.expression).toEqual([
-         {
-            icon: '',
-            operation: 'number',
-            values: ['1'],
-         },
-      ])
-      calculator.minus()
-      calculator.change_sign()
-      expect(calculator.expression).toEqual([
-         {
-            icon: '',
-            operation: 'number',
-            values: ['1'],
-         },
-         {
-            icon: '-',
-            operation: 'minus',
-            values: [],
-         },
-      ])
-      calculator.setValue(1)()
-      calculator.change_sign()
-      expect(calculator.expression).toEqual([
-         {
-            icon: '',
-            operation: 'number',
-            values: ['1'],
-         },
-         {
-            icon: '+',
-            operation: 'plus',
-            values: [],
-         },
          {
             icon: '',
             operation: 'number',
@@ -348,27 +315,9 @@ describe('Logic', () => {
       calculator.factorial()
       expect(calculator.expression).toEqual([
          {
-            icon: '',
-            operation: 'number',
-            values: ['10'],
-         },
-         {
             icon: '!',
             operation: 'factorial',
-            values: [],
-         },
-      ])
-      calculator.factorial()
-      expect(calculator.expression).toEqual([
-         {
-            icon: '',
-            operation: 'number',
             values: ['10'],
-         },
-         {
-            icon: '!',
-            operation: 'factorial',
-            values: [],
          },
       ])
 
@@ -376,14 +325,9 @@ describe('Logic', () => {
 
       expect(calculator.expression).toEqual([
          {
-            icon: '',
-            operation: 'number',
-            values: ['10'],
-         },
-         {
             icon: '!',
             operation: 'factorial',
-            values: [],
+            values: ['10'],
          },
       ])
    })
@@ -392,37 +336,86 @@ describe('Logic', () => {
       expect(calculator.expression).toEqual([
          { icon: '', change: false, twoValue: true, operation: 'degree', values: ['2'] },
       ])
-      calculator.setValue(9)()
+      calculator.setValue(2)()
       expect(calculator.expression).toEqual([
-         { icon: '', change: false, twoValue: true, operation: 'degree', values: ['2', '9'] },
+         { icon: '', change: false, twoValue: true, operation: 'degree', values: ['2', '2'] },
       ])
       calculator.equal()
-      expect(calculator.expression).toEqual([{ icon: '', operation: 'number', values: [81] }])
+      expect(calculator.expression).toEqual([{ icon: '', operation: 'number', values: ['4'] }])
+      calculator.degree(2)()
+      expect(calculator.expression).toEqual([
+         { icon: '', change: false, twoValue: true, operation: 'degree', values: ['2', '4'] },
+      ])
    })
    test('sqrt', () => {
       calculator.sqrt(2)()
       expect(calculator.expression).toEqual([
          { icon: '', change: false, twoValue: true, operation: 'sqrt', values: ['2'] },
       ])
-      calculator.setValue(9)()
+      calculator.setValue(16)()
       expect(calculator.expression).toEqual([
-         { icon: '', change: false, twoValue: true, operation: 'sqrt', values: ['2', '9'] },
+         { icon: '', change: false, twoValue: true, operation: 'sqrt', values: ['2', '16'] },
       ])
       calculator.equal()
-      expect(calculator.expression).toEqual([{ icon: '', operation: 'number', values: [3] }])
+      expect(calculator.expression).toEqual([{ icon: '', operation: 'number', values: ['4'] }])
+      calculator.sqrt(2)()
+      expect(calculator.expression).toEqual([
+         { icon: '', change: false, twoValue: true, operation: 'sqrt', values: ['2', '4'] },
+      ])
    })
    test('MC', () => {
       calculator.MC()
       expect(calculator.memory).toBe('')
    })
    test('MR', () => {
-      calculator.memory = '17'
+      calculator.memory = 17
       calculator.MR()
       expect(calculator.expression).toEqual([
          {
             icon: '',
             operation: 'number',
             values: ['17'],
+         },
+      ])
+      calculator.memory = 1
+      calculator.MR()
+
+      expect(calculator.expression).toEqual([
+         {
+            icon: '',
+            operation: 'number',
+            values: ['1'],
+         },
+      ])
+      calculator.sum()
+      expect(calculator.expression).toEqual([
+         {
+            icon: '',
+            operation: 'number',
+            values: ['1'],
+         },
+         {
+            icon: '+',
+            operation: 'plus',
+            values: [],
+         },
+      ])
+      calculator.MR()
+      expect(calculator.expression).toEqual([
+         {
+            icon: '',
+            operation: 'number',
+            values: ['1'],
+         },
+         {
+            icon: '+',
+            operation: 'plus',
+            values: [],
+         },
+         {
+            icon: '',
+            operation: 'number',
+            values: ['1'],
          },
       ])
    })
@@ -434,7 +427,7 @@ describe('Logic', () => {
             values: ['3'],
          },
       ]
-      calculator.memory = '17'
+      calculator.memory = 17
 
       calculator.M_PLUS()
       expect(calculator.memory).toBe(20)
@@ -447,7 +440,7 @@ describe('Logic', () => {
             values: ['3'],
          },
       ]
-      calculator.memory = '17'
+      calculator.memory = 17
 
       calculator.M_MINUS()
       expect(calculator.memory).toBe(14)
@@ -466,21 +459,19 @@ describe('Logic', () => {
          { icon: '', change: true, twoValue: true, operation: 'degree', values: ['1', '10'] },
       ])
       calculator.equal()
-      expect(calculator.expression).toEqual([{ icon: '', operation: 'number', values: [10] }])
+      expect(calculator.expression).toEqual([{ icon: '', operation: 'number', values: ['10'] }])
    })
    test('_1_x', () => {
       calculator._1_x()
+      expect(calculator.expression).toEqual([])
+      calculator.setValue(4)()
+      calculator._1_x()
 
       expect(calculator.expression).toEqual([
          {
             icon: '',
             operation: 'number',
-            values: ['1'],
-         },
-         {
-            icon: '/',
-            operation: 'divide',
-            values: [],
+            values: ['0.25'],
          },
       ])
       calculator._1_x()
@@ -489,22 +480,15 @@ describe('Logic', () => {
          {
             icon: '',
             operation: 'number',
-            values: ['1'],
-         },
-         {
-            icon: '/',
-            operation: 'divide',
-            values: [],
+            values: ['4'],
          },
       ])
       calculator.setValue(10)()
-      calculator.equal()
-
       expect(calculator.expression).toEqual([
          {
             icon: '',
             operation: 'number',
-            values: ['0.1'],
+            values: ['10'],
          },
       ])
    })

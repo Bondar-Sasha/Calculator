@@ -14,7 +14,15 @@ class CalculatorActions extends Calculator {
       this.setUI()
       return this.UI.join('')
    }
+   intermediateCount = operationObj => {
+      const { rewrite } = this.getExpressionHandlers(operationObj.operation)
 
+      if (this.expression.length === 3) {
+         rewrite([{ icon: '', operation: 'number', values: [count(this.expression)] }, operationObj])
+         return true
+      }
+      return false
+   }
    setUI = () => {
       this.UI = []
       this.expression.forEach(item => {
@@ -178,14 +186,9 @@ class CalculatorActions extends Calculator {
       if (!validation(this.expression, rules.percent)) {
          return false
       }
-      const { add, rewrite } = this.getExpressionHandlers('percent')
+      const { add } = this.getExpressionHandlers('percent')
 
-      if (this.expression.length === 3) {
-         rewrite([
-            { icon: '', operation: 'number', values: [count(this.expression)] },
-            { icon: '%', operation: 'percent', values: [] },
-         ])
-
+      if (this.intermediateCount({ icon: '%', operation: 'percent', values: [] })) {
          return true
       }
       add({
@@ -201,16 +204,12 @@ class CalculatorActions extends Calculator {
       if (!validation(this.expression, rules.divide)) {
          return false
       }
-      const { add, rewrite } = this.getExpressionHandlers('divide')
+      const { add } = this.getExpressionHandlers('divide')
 
-      if (this.expression.length === 3) {
-         rewrite([
-            { icon: '', operation: 'number', values: [count(this.expression)] },
-            { icon: '/', operation: 'divide', values: [] },
-         ])
-
+      if (this.intermediateCount({ icon: '/', operation: 'divide', values: [] })) {
          return true
       }
+
       add({
          icon: '/',
          operation: 'divide',
@@ -224,16 +223,12 @@ class CalculatorActions extends Calculator {
       if (!validation(this.expression, rules.multiply)) {
          return false
       }
-      const { add, rewrite } = this.getExpressionHandlers('multiply')
+      const { add } = this.getExpressionHandlers('multiply')
 
-      if (this.expression.length === 3) {
-         rewrite([
-            { icon: '', operation: 'number', values: [count(this.expression)] },
-            { icon: '*', operation: 'multiply', values: [] },
-         ])
-
+      if (this.intermediateCount({ icon: '*', operation: 'multiply', values: [] })) {
          return true
       }
+
       add({
          icon: '*',
          operation: 'multiply',
@@ -247,14 +242,9 @@ class CalculatorActions extends Calculator {
       if (!validation(this.expression, rules.minus)) {
          return false
       }
-      const { add, rewrite } = this.getExpressionHandlers('minus')
+      const { add } = this.getExpressionHandlers('minus')
 
-      if (this.expression.length === 3) {
-         rewrite([
-            { icon: '', operation: 'number', values: [count(this.expression)] },
-            { icon: '-', operation: 'minus', values: [] },
-         ])
-
+      if (this.intermediateCount({ icon: '-', operation: 'minus', values: [] })) {
          return true
       }
 
@@ -279,14 +269,10 @@ class CalculatorActions extends Calculator {
       }
       const { add, rewrite } = this.getExpressionHandlers('plus')
 
-      if (this.expression.length === 3) {
-         rewrite([
-            { icon: '', operation: 'number', values: [count(this.expression)] },
-            { icon: '+', operation: 'plus', values: [] },
-         ])
-
+      if (this.intermediateCount({ icon: '+', operation: 'plus', values: [] })) {
          return true
       }
+
       if (this.expression.length === 2 && lastEl(this.expression) === 'minus') {
          rewrite([])
          this.history = ''
@@ -339,8 +325,8 @@ class CalculatorActions extends Calculator {
       if (!this.memory) {
          return false
       }
-      if (this.expression.length === 3 && lastEl(this.expression).operation === 'number') {
-         lastEl(this.expression).values[0] = this.memory
+      if (lastEl(this.expression)?.operation === 'number') {
+         lastEl(this.expression).values[0] = this.memory.toString()
          return true
       }
       this.setValue(this.memory)()
@@ -389,14 +375,14 @@ class CalculatorActions extends Calculator {
       if (!validation(this.expression, rules._1_x)) {
          return false
       }
-      const { change } = this.getExpressionHandlers('number')
+      const { change } = this.getExpressionHandlers('equal')
 
       if (lastEl(this.expression)?.values[0] === 'error') {
          this.expression = []
          this.history = ''
          return true
       }
-      const res = formatNumber(1 / lastEl(this.expression).values[0], 6)
+      const res = formatNumber(1 / lastEl(this.expression).values[0], 7)
       change({
          icon: '',
          operation: 'number',

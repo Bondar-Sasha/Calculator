@@ -36,13 +36,13 @@ export default function count(expression) {
          if (copyLastEl.operation === 'number') {
             const res = utils[lastEl(copy).operation](lastEl(copy).values)
             if (!checkRes(res)) throw new Error('result is null')
-            return formatNumber(res.toString(), 6)
+            return formatNumber(res.toString(), 7)
          }
          if (['factorial', 'sqrt', 'degree'].includes(copyLastEl.operation)) {
             if (copyLastEl.values.length !== 2) throw new Error('result is null')
             const res = utils[lastEl(copy).operation](lastEl(copy).values)
             if (!checkRes(res)) throw new Error('result is null')
-            return formatNumber(res.toString(), 6)
+            return formatNumber(res.toString(), 7)
          }
       }
       let res = null
@@ -52,7 +52,7 @@ export default function count(expression) {
          utils[copy[2].operation](copy[2].values),
       )
       if (!checkRes(res)) throw new Error('result is null')
-      return formatNumber(res.toString(), 6)
+      return formatNumber(res.toString(), 7)
    } catch (error) {
       return 'error'
    }
