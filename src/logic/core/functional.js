@@ -159,14 +159,14 @@ class CalculatorActions extends Calculator {
       if (this.expression.length === 3) {
          if (this.expression[this.expression.length - 2].operation === 'plus') {
             change({ icon: '-', operation: 'minus', values: [...this.expression[this.expression.length - 2].values] })(
-               this.length - 2,
+               this.expression.length - 2,
             )
 
             return true
          }
          if (this.expression[this.expression.length - 2].operation === 'minus') {
             change({ icon: '+', operation: 'plus', values: [...this.expression[this.expression.length - 2].values] })(
-               this.length - 2,
+               this.expression.length - 2,
             )
 
             return true
@@ -175,11 +175,10 @@ class CalculatorActions extends Calculator {
 
       if (lastEl(this.expression).values[0][0] === '-') {
          lastEl(this.expression).values[0] = lastEl(this.expression).values[0].slice(1)
-         return true
       } else {
          lastEl(this.expression).values[0] = '-' + lastEl(this.expression).values[0]
-         return true
       }
+      return true
    }
 
    percent = () => {
