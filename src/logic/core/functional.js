@@ -1,6 +1,6 @@
 import formatNumber from '../../utils/formatNumber.js'
 import lastEl from '../../utils/lastEl.js'
-import count, { checkRes } from './count.js'
+import count from './count.js'
 import Calculator from './initialModel.js'
 import validation from './validation/handler.js'
 import rules from './validation/rules.js'
@@ -43,35 +43,36 @@ class CalculatorActions extends Calculator {
          }
       })
    }
-   getExpressionHandlers = history => ({
-      add: item => {
-         if (lastEl(this.expression)?.values[0] === 'error') {
-            this.expression = []
-            this.history = ''
-            return false
-         }
-         this.expression = [...this.expression, item]
-         this.history = history
-         return true
-      },
-      rewrite: arr => {
-         this.expression = arr
-         this.history = history
-         return true
-      },
-      change: newItem => {
-         return index => {
-            if (index) {
-               this.expression[index] = newItem
-            } else {
-               this.expression[this.expression.length - 1] = newItem
-            }
+   getExpressionHandlers = history => {
+      if (lastEl(this.expression)?.values[0] === 'error') {
+         this.expression = []
+         this.history = ''
+      }
+      return {
+         add: item => {
+            this.expression = [...this.expression, item]
             this.history = history
-
             return true
-         }
-      },
-   })
+         },
+         rewrite: arr => {
+            this.expression = arr
+            this.history = history
+            return true
+         },
+         change: newItem => {
+            return index => {
+               if (index) {
+                  this.expression[index] = newItem
+               } else {
+                  this.expression[this.expression.length - 1] = newItem
+               }
+               this.history = history
+
+               return true
+            }
+         },
+      }
+   }
 
    clear = () => {
       const { rewrite } = this.getExpressionHandlers('')
@@ -361,7 +362,7 @@ class CalculatorActions extends Calculator {
 
          return true
       }
-
+      if (!lastEl(this.expression)) return false
       change({
          icon: '!',
          operation: 'factorial',
@@ -376,16 +377,12 @@ class CalculatorActions extends Calculator {
       }
       const { change } = this.getExpressionHandlers('equal')
 
-      if (lastEl(this.expression)?.values[0] === 'error') {
-         this.expression = []
-         this.history = ''
-         return true
-      }
-      const res = formatNumber(1 / lastEl(this.expression).values[0], 7)
+      const res = formatNumber(1 / lastEl(this.expression)?.values[0], 7)
+
       change({
          icon: '',
          operation: 'number',
-         values: [!checkRes(res) ? 'error' : res],
+         values: [res === 'Infinity' ? 'error' : res],
       })()
 
       return true
@@ -395,7 +392,6 @@ class CalculatorActions extends Calculator {
          return false
       }
       const { add } = this.getExpressionHandlers('degree')
-      if (lastEl(this.expression)?.operation === 'number' && lastEl(this.expression).values[0] !== 'error') return false
 
       add({
          icon: '',
@@ -513,8 +509,6 @@ class CalculatorActions extends Calculator {
    }
 
    getActions = () => {
-      // eslint-disable-next-line no-unused-vars
-
       return this
    }
 }
