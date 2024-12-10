@@ -23,7 +23,7 @@ module.exports = env => ({
       rules: [
          {
             test: /\.js$/,
-            exclude: /node_modules/,
+            exclude: [/node_modules/, /\.test\.js$/],
             use: {
                loader: 'babel-loader',
             },
@@ -45,7 +45,7 @@ module.exports = env => ({
       }),
    ],
 
-   // devtool: 'source-map',
+   devtool: 'source-map',
    devServer: {
       compress: true,
       port: process.env.DEV_PORT,

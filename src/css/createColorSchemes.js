@@ -4,9 +4,8 @@ import getElById from '../utils/getElById.js'
 
 const container = getElById('color_scheme')
 
-schemeData.forEach((item, index) => {
+schemeData.forEach(item => {
    const scheme = document.createElement('div')
-   scheme.setAttribute('index', index)
    scheme.setAttribute('class', 'colors_container')
 
    const preperedColors = {
@@ -20,16 +19,9 @@ schemeData.forEach((item, index) => {
    scheme.addEventListener('click', () => {
       initColors(preperedColors)
    })
+   scheme.style.borderTopColor = item.fond
+   scheme.style.borderRightColor = item.screen.fond
+   scheme.style.borderLeftColor = item.buttons.fond
 
-   for (let i = 1; i <= 3; i++) {
-      const color = document.createElement('div')
-
-      if (i === 1) color.style.backgroundColor = item.fond
-      if (i === 2) color.style.backgroundColor = item.screen.fond
-      if (i === 3) color.style.backgroundColor = item.buttons.fond
-
-      color.setAttribute('class', `colors_container_child_${i}`)
-      scheme.append(color)
-   }
    container.append(scheme)
 })
