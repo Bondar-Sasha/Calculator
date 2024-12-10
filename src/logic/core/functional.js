@@ -391,7 +391,18 @@ class CalculatorActions extends Calculator {
       if (!validation(this.expression, rules.degree)) {
          return false
       }
-      const { add } = this.getExpressionHandlers('degree')
+      const { add, change } = this.getExpressionHandlers('degree')
+      if (lastEl(this.expression)?.operation === 'number') {
+         change({
+            icon: '',
+            operation: 'degree',
+            twoValue: true,
+            change: false,
+            values: [lastEl(this.expression).values[0], '10'],
+         })()
+
+         return true
+      }
 
       add({
          icon: '',

@@ -39,7 +39,8 @@ export default function count(expression) {
             return formatNumber(res.toString(), 7)
          }
          if (['factorial', 'sqrt', 'degree'].includes(copyLastEl.operation)) {
-            if (copyLastEl.values.length !== 2) throw new Error('result is null')
+            if (copyLastEl.values.length !== 2 && copyLastEl.operation !== 'factorial')
+               throw new Error('result is null')
             const res = utils[lastEl(copy).operation](lastEl(copy).values)
             if (!checkRes(res)) throw new Error('result is null')
             return formatNumber(res.toString(), 7)
